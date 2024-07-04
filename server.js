@@ -40,6 +40,7 @@ async function run() {
     const roomsCollection = database.collection("roomsCollection");
     const members = database.collection("members");
     const membersPayment = database.collection("membersPayment");
+    const meal = database.collection("meal");
 
     app.get('/messInfo', async (req, res) => {
       try {
@@ -145,6 +146,22 @@ app.get('/api/member-payment/:id', async (req, res) => {
   }
 });
   
+// app.get('/api/meals', async (req, res) => {
+//   try {
+//     const meals = await meal.find().toArray();
+//     res.json(meals);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+app.get('/meals', async (req, res) => {
+  try {
+      const meals = await meal.find().toArray();
+      res.json(meals);
+  } catch (err) {
+      res.status(400).json('Error: ' + err);
+  }
+});
 
     
 
@@ -195,6 +212,44 @@ app.post('/api/payment', async (req, res) => {
       res.json('payment added!');
   } catch (err) {
       res.status(400).json('Error: ' + err);
+  }
+});
+app.post('/addMeal', async (req, res) => {
+  try {
+      const newMeal = req.body;
+      console.log(newMeal)
+      
+      await meal.insertOne(newMeal);
+      res.json('meal added!');
+  } catch (err) {
+      res.status(400).json('Error: ' + err);
+  }
+});
+
+app.put('/meals/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, price } = req.body;
+    console.log(id, name, price);
+    const result = await meal.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { name, price } }
+    );
+    res.json({ message: `Updated ${result.modifiedCount} meal(s)` });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+app.delete('/meals/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const result = await meal.deleteOne({ _id:new ObjectId(id) });
+    res.json({ message: `Deleted ${result.deletedCount} meal(s)` });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
